@@ -1,0 +1,28 @@
+
+version: '3.7'
+services:
+  db:
+    image: mongo:latest
+    container_name: docker-demo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+  
+  api:
+    build: .
+    image: docker-demo-api
+    restart: on-failure
+    container_name: docker-demo_api
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "8007:80"
+
+volumes:
+  mongodb_data_container:

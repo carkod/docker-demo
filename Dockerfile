@@ -1,7 +1,5 @@
-# syntax=docker/dockerfile:experimental
 
-FROM node:12-slim as build-stage
-# RUN apt-get update && apt-get install -y wget --no-install-recommends
+FROM node:15 as build-stage
 WORKDIR /app
 COPY /web/package.json /app/
 RUN yarn install
@@ -9,16 +7,17 @@ COPY /web/ /app/
 RUN yarn run build
 
 
-FROM tiangolo/uwsgi-nginx-flask:python3.7 AS python-dependencies
-COPY requirements.txt /tmp/
+FROM python:3.8
+COPY Pipfile prestart.sh ./
 COPY --from=build-stage /app/build /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-COPY ./api/. /app/.
-RUN pip install --upgrade pip
-RUN pip3 install -r /tmp/requirements.txt
-
+WORKDIR app
+COPY api .
+RUN pip install --upgrade pip && pip install pipenv
+RUN pipenv install --deploy
+CMD [ "pipenv", "run", "gunicorn", "-w", "3", "-b", ":80", "main:app" ]
 
 STOPSIGNAL SIGTERM
 EXPOSE 80
-# CMD ["nginx", "-g", "daemon off;"]
-# CMD ["app/api/app.py"]
+
+

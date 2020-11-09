@@ -1,12 +1,19 @@
+import os
 from flask import Flask, jsonify
+from api.submodule.submodule import submodule
 
 app = Flask(__name__)
 
-
-@app.route("/api/")
+@app.route("/api/secret")
 def hello_whale():
-    return "hello"
+    secret = os.getenv("SECRET_KEY")
+    return secret
 
+
+@app.route("/api/submodule")
+def hello_submodule():
+    text = submodule()
+    return text
 
 @app.route("/api/v1")
 def api_1():
