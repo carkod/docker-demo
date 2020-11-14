@@ -14,15 +14,16 @@ services:
   
   api:
     build: .
-    image: docker-demo-api
+    image: docker-demo
     restart: on-failure
-    container_name: docker-demo_api
+    container_name: docker-demo
     depends_on:
       - db
     env_file:
       - .env
     ports:
-      - "8007:80"
+      - 8007:80
+      - 8008:8006
 
 volumes:
   mongodb_data_container:

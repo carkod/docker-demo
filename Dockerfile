@@ -8,16 +8,16 @@ RUN yarn run build
 
 
 FROM python:3.8
-COPY --from=build-stage /app/build /usr/share/nginx/html
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3-dev nginx
+COPY --from=build-stage /app/build /var/www/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 WORKDIR app
-COPY Pipfile ./
+COPY Pipfile Pipfile.lock start.sh ./
+RUN chmod +x start.sh
+RUN pip install --upgrade pip && pip install pipenv gunicorn
+RUN pipenv install --system --deploy --ignore-pipfile
 COPY api api
-RUN pip install --upgrade pip && pip install pipenv
-RUN pipenv install --deploy
-CMD [ "pipenv", "run", "gunicorn", "-w", "3", "-b", ":80", "api.main:app" ]
+ENTRYPOINT ["./start.sh"]
 
 STOPSIGNAL SIGTERM
-EXPOSE 80
-
-
+EXPOSE 80 8006
